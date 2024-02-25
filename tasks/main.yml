@@ -1,0 +1,62 @@
+---
+- name: Ensure deployment directory exists
+  ansible.builtin.file:
+    path: "{{ deploy_docker_compose_directory }}"
+    state: directory
+    owner: "{{ deploy_docker_compose_owner }}"
+    group: "{{ deploy_docker_compose_group }}"
+    mode: "0755"
+
+- name: Install Git if deploy_docker_compose_git_repo_url is provided
+  ansible.builtin.package:
+    name: 
+      - git
+      - python3-docker
+    state: present
+  when: deploy_docker_compose_git_repo_url | length > 0
+
+- name: Deploy SSH private key for repo git
+  ansible.builtin.copy:
+    content: "{{ deploy_docker_compose_git_ssh_key_content }}"
+    dest: "{{ deploy_docker_compose_git_ssh_key }}"
+    owner: root
+    group: root
+    mode: '0600'
+  when: deploy_docker_compose_git_ssh_key_content | length > 0
+
+- name: Clone Git repository if deploy_docker_compose_git_repo_url is provided
+  ansible.builtin.git:
+    repo: "{{ deploy_docker_compose_git_repo_url }}"
+    dest: "{{ deploy_docker_compose_directory }}"
+    version: "{{ deploy_docker_compose_git_repo_branch | default(omit) }}"
+    key_file: "{{ deploy_docker_compose_git_ssh_key | default(omit) }}"
+    accept_newhostkey: true
+    clone: yes
+    update: yes
+  when: deploy_docker_compose_git_repo_url | length > 0
+
+- name: Create .env file
+  ansible.builtin.file:
+    state: touch
+    path: "{{ deploy_docker_compose_directory }}/.env"
+    owner: "{{ deploy_docker_compose_owner }}"
+    group: "{{ deploy_docker_compose_group }}"
+    mode: '640'
+
+- name: add vars in .env file
+  lineinfile:
+    path: "{{ deploy_docker_compose_directory }}/.env"
+    line: "{{ item.key }}={{ item.value }}"
+    insertafter: EOF
+  with_dict: "{{ deploy_docker_compose_env_vars }}"
+
+- name: Optionally build Docker image
+  ansible.builtin.command:
+    cmd: "docker build -t {{ deploy_docker_compose_image_name }} ."
+    chdir: "{{ deploy_docker_compose_directory }}"
+  when: deploy_docker_compose_image_name | length > 0
+
+- name: Start Docker Compose services
+  community.docker.docker_compose:
+    project_src: "{{ deploy_docker_compose_directory }}"
+    state: present

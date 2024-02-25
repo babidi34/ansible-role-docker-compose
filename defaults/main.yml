@@ -1,0 +1,20 @@
+---
+# Chemin du répertoire où docker-compose et les fichiers relatifs seront stockés
+deploy_docker_compose_directory: "/opt/app"
+deploy_docker_compose_owner: root
+deploy_docker_compose_group: root
+
+# URL du dépôt Git contenant docker-compose et les fichiers associés (laisser vide si non utilisé)
+deploy_docker_compose_git_repo_url: ""
+
+# Branch, tag or commit git to clone
+deploy_docker_compose_git_repo_branch: ""
+
+deploy_docker_compose_git_ssh_key_name: "id_git_repo"
+deploy_docker_compose_git_ssh_key_content: ""
+
+# Name image docker to build
+deploy_docker_compose_image_name: ""
+
+# Variables d'environnement à passer au fichier .env pour Docker Compose
+deploy_docker_compose_env_vars: {}
