@@ -33,6 +33,7 @@
     accept_newhostkey: true
     clone: yes
     update: yes
+    force: true
   when: deploy_docker_compose_git_repo_url | length > 0
 
 - name: Create .env file
@@ -50,13 +51,23 @@
     insertafter: EOF
   with_dict: "{{ deploy_docker_compose_env_vars }}"
 
-- name: Optionally build Docker image
+- name: Build Docker images from Dockerfiles
   ansible.builtin.command:
-    cmd: "docker build -t {{ deploy_docker_compose_image_name }} ."
-    chdir: "{{ deploy_docker_compose_directory }}"
-  when: deploy_docker_compose_image_name | length > 0
+    cmd: >
+      docker build
+      -f {{ item.context | default(deploy_docker_compose_directory) }}/{{ item.dockerfile }}
+      {% for tag in item.tags %}
+      -t {{ item.image_name }}:{{ tag }} 
+      {% endfor %}
+      {% for arg_key, arg_val in item.build_args.items() %}
+      --build-arg {{ arg_key }}={{ arg_val }}
+      {% endfor %}
+      {{ item.context | default(deploy_docker_compose_directory) }}
+  loop: "{{ deploy_docker_compose_dockerfile }}"
+  when: deploy_docker_compose_dockerfile | length > 0
+
 
 - name: Start Docker Compose services
-  community.docker.docker_compose:
-    project_src: "{{ deploy_docker_compose_directory }}"
-    state: present
+  ansible.builtin.command:
+    cmd: docker-compose up -d
+    chdir: "{{ deploy_docker_compose_directory }}"

@@ -13,8 +13,14 @@ deploy_docker_compose_git_repo_branch: ""
 deploy_docker_compose_git_ssh_key_name: "id_git_repo"
 deploy_docker_compose_git_ssh_key_content: ""
 
-# Name image docker to build
-deploy_docker_compose_image_name: ""
+# Build DOckerfile
+deploy_docker_compose_dockerfile: []
+#deploy_docker_compose_dockerfile:
+#  - dockerfile: "Dockerfile"  # Nom du Dockerfile relatif au contexte
+#    image_name: "monapp"
+#    tags: ['1.1.1', 'latest']
+#    build_args: {}  # Arguments de construction optionnels
+#    context: "{{ deploy_docker_compose_directory }}"
 
 # Variables d'environnement à passer au fichier .env pour Docker Compose
 deploy_docker_compose_env_vars: {}
