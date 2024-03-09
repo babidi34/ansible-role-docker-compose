@@ -44,6 +44,12 @@
     group: "{{ deploy_docker_compose_group }}"
     mode: '640'
 
+- name: Copy file env local to remote
+  copy:
+    src: "{{ deploy_docker_compose_env_file_local }}"
+    dest: "{{ deploy_docker_compose_directory }}/.env"
+  when: deploy_docker_compose_env_file_local | length > 0
+
 - name: add vars in .env file
   lineinfile:
     path: "{{ deploy_docker_compose_directory }}/.env"
@@ -65,7 +71,6 @@
       {{ item.context | default(deploy_docker_compose_directory) }}
   loop: "{{ deploy_docker_compose_dockerfile }}"
   when: deploy_docker_compose_dockerfile | length > 0
-
 
 - name: Start Docker Compose services
   ansible.builtin.command:

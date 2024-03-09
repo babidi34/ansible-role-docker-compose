@@ -24,3 +24,4 @@ deploy_docker_compose_dockerfile: []
 
 # Variables d'environnement à passer au fichier .env pour Docker Compose
 deploy_docker_compose_env_vars: {}
+deploy_docker_compose_env_file_local: ""
